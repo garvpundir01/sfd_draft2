@@ -68,3 +68,20 @@ body {
 }
 .progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--success), #70ffa1); }
 .progress.over > span { background: linear-gradient(90deg, var(--danger), #ff9a9a); }
+\/* Add this at the bottom of styles.css */
+
+.table {
+  border-collapse: separate;
+  border-spacing: 16px 8px; /* horizontal vertical */
+  width: 100%;
+}
+
+.table th,
+.table td {
+  padding: 8px 12px; /* more padding inside cells */
+  text-align: left;
+}
+
+.table th {
+  font-weight: 600;
+}

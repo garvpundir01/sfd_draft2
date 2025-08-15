@@ -14,12 +14,15 @@ function Row({ tx, onChanged }) {
         description: desc,
         amount: Number(amount),
         occurred_at: date,
+        // Note: category/account unchanged here; edit UI for those could be added later
+        category: tx.category,
+        account: tx.account,
       });
       setEditing(false);
-      onChanged?.(); // tell parent to refresh everything
+      onChanged?.();
     } catch (e) {
       console.error(e);
-      alert("Failed to update transaction");
+      alert("Failed to save transaction");
     }
   }
 
@@ -27,7 +30,7 @@ function Row({ tx, onChanged }) {
     if (!confirm("Delete this transaction?")) return;
     try {
       await deleteTransaction(tx.id);
-      onChanged?.(); // tell parent to refresh everything
+      onChanged?.();
     } catch (e) {
       console.error(e);
       alert("Failed to delete transaction");
@@ -37,32 +40,55 @@ function Row({ tx, onChanged }) {
   if (editing) {
     return (
       <tr>
-        <td><input className="select" value={desc} onChange={(e)=>setDesc(e.target.value)} /></td>
-        <td><input className="select" type="number" step="0.01" value={amount} onChange={(e)=>setAmount(e.target.value)} /></td>
-        <td><input className="select" type="date" value={date} onChange={(e)=>setDate(e.target.value)} /></td>
-        <td colSpan={2} />
-        <td style={{whiteSpace:"nowrap"}}>
+        <td>
+          <input
+            className="select"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="select"
+            type="number"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="select"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </td>
+        <td>{tx.category_name ?? tx.category}</td>
+        <td>{tx.account_name ?? "—"}</td>
+        <td style={{ whiteSpace: "nowrap" }}>
           <button className="btn" onClick={save}>Save</button>
-          <button className="btn" onClick={()=>{ setEditing(false); setDesc(tx.description||""); setAmount(String(tx.amount)); setDate(tx.occurred_at); }} style={{marginLeft:6}}>Cancel</button>
+          <button className="btn" onClick={() => setEditing(false)}>Cancel</button>
         </td>
       </tr>
     );
   }
 
-  const isNeg = Number(tx.amount) < 0;
+  const amt = Number(tx.amount || 0);
+  const isNeg = amt < 0;
 
   return (
     <tr>
       <td>{tx.description}</td>
-      <td style={{ color: isNeg ? "#ff7676" : "#4ce087" }}>
-        {isNeg ? "-" : ""}{Math.abs(Number(tx.amount)).toLocaleString()}
+      <td style={{ color: isNeg ? "#e76f6f" : "#34d399" }}>
+        {isNeg ? "-" : ""}{Math.abs(amt)}
       </td>
       <td>{tx.occurred_at}</td>
-      <td>{tx.category || "—"}</td>
-      <td>{tx.account || "—"}</td>
-      <td style={{whiteSpace:"nowrap"}}>
-        <button className="btn" onClick={()=>setEditing(true)}>Edit</button>
-        <button className="btn btn-danger" onClick={remove} style={{marginLeft:6}}>Delete</button>
+      <td>{tx.category_name ?? tx.category}</td>
+      <td>{tx.account_name ?? "—"}</td>
+      <td style={{ whiteSpace: "nowrap" }}>
+        <button className="btn" onClick={() => setEditing(true)}>Edit</button>
+        <button className="btn btn-danger" onClick={remove}>Delete</button>
       </td>
     </tr>
   );
@@ -70,39 +96,51 @@ function Row({ tx, onChanged }) {
 
 export default function TransactionsList({ refreshSignal, onChanged }) {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   async function load() {
+    setLoading(true);
     try {
       const data = await listTransactions();
-      setRows(data);
+      setRows(Array.isArray(data) ? data : data?.results ?? []);
     } catch (e) {
       console.error(e);
+      alert("Failed to load transactions");
+    } finally {
+      setLoading(false);
     }
   }
 
-  useEffect(() => { load(); }, [refreshSignal]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshSignal]);
 
   return (
     <Card title="Recent Transactions">
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ textAlign: "left", opacity: 0.8 }}>
-            <tr>
-              <th>Description</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Account</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((tx) => (
-              <Row key={tx.id} tx={tx} onChanged={onChanged} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Account</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
+            <tr><td colSpan={6}>Loading…</td></tr>
+          ) : rows.length === 0 ? (
+            <tr><td colSpan={6}>No transactions yet.</td></tr>
+          ) : (
+            rows.map((tx) => (
+              <Row key={tx.id} tx={tx} onChanged={() => { load(); onChanged?.(); }} />
+            ))
+          )}
+        </tbody>
+      </table>
     </Card>
   );
 }
