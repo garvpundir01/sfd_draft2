@@ -1,0 +1,70 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --text: #e8ebf0;
+  --muted: #a5adba;
+  --card: #161a22;
+  --accent: #6ea8fe;
+  --success: #3ddc97;
+  --warn: #ffb86b;
+  --danger: #ff6b6b;
+  --border: #242a33;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+}
+
+.header {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: rgba(15,17,21,.85); backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+
+.container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+.grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+@media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 16px rgba(0,0,0,.25);
+}
+.card h3 { margin: 6px 0 8px; font-size: 18px; }
+
+.section-title { margin: 6px 0 12px; font-size: 20px; font-weight: 700; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 999px; font-size: 13px;
+  border: 1px solid var(--border); background: #12151b;
+}
+.badge.expense { color: var(--danger); border-color: #3a2123; }
+.badge.income  { color: var(--success); border-color: #203228; }
+
+.list { padding-left: 18px; line-height: 1.8; }
+
+.kv { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+
+.controls { display: flex; gap: 8px; align-items: center; }
+.select {
+  background: #11151b; color: var(--text); border: 1px solid var(--border);
+  padding: 6px 8px; border-radius: 8px;
+}
+
+.btn {
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn-danger { background: #251b1b; border-color: #442525; color: #ff9aa9; }
+
+.progress {
+  height: 10px; background: #0e1116; border: 1px solid var(--border);
+  border-radius: 999px; overflow: hidden;
+}
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--success), #70ffa1); }
+.progress.over > span { background: linear-gradient(90deg, var(--danger), #ff9a9a); }
